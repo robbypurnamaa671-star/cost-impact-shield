@@ -1,14 +1,17 @@
 import { PageLayout } from '@/components/PageLayout';
 import { SpendSlider } from '@/components/SpendSlider';
+import { ShareButton } from '@/components/ShareButton';
+import { ShareableCard } from '@/components/ShareableCard';
 import { useAppState } from '@/hooks/useAppState';
 import { getCountryByCode, formatCurrency, getSliderMax, getSliderStep } from '@/data/countries';
 import { getCrisisById } from '@/data/crisisTypes';
 import { calculateImpact, calculateWalletImpact } from '@/lib/simulation';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { Fuel, Apple, Smartphone, TrendingUp, Calendar } from 'lucide-react';
 
 const WalletPage = () => {
   const { state, updateState } = useAppState();
+  const shareRef = useRef<HTMLDivElement>(null);
   
   const country = getCountryByCode(state.selectedCountry);
   const crisis = getCrisisById(state.selectedCrisis);
@@ -98,68 +101,78 @@ const WalletPage = () => {
         </div>
         
         {/* Impact results */}
-        {walletImpact && country && (
+        {walletImpact && country && crisis && (
           <div className="space-y-4 animate-slide-up">
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-              Estimated Extra Costs
-            </h2>
-            
-            {/* Breakdown cards */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="stat-card text-center">
-                <Fuel className="w-5 h-5 mx-auto mb-2 text-chart-fuel" />
-                <div className="text-base font-bold text-chart-fuel">
-                  +{formatAmount(Math.round(walletImpact.monthlyFuelIncrease))}
-                </div>
-                <div className="text-xs text-muted-foreground">Fuel/mo</div>
-              </div>
-              
-              <div className="stat-card text-center">
-                <Apple className="w-5 h-5 mx-auto mb-2 text-chart-food" />
-                <div className="text-base font-bold text-chart-food">
-                  +{formatAmount(Math.round(walletImpact.monthlyFoodIncrease))}
-                </div>
-                <div className="text-xs text-muted-foreground">Food/mo</div>
-              </div>
-              
-              <div className="stat-card text-center">
-                <Smartphone className="w-5 h-5 mx-auto mb-2 text-chart-electronics" />
-                <div className="text-base font-bold text-chart-electronics">
-                  +{formatAmount(Math.round(walletImpact.monthlyElectronicsIncrease))}
-                </div>
-                <div className="text-xs text-muted-foreground">Tech/mo</div>
-              </div>
+            {/* Share button */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                Estimated Extra Costs
+              </h2>
+              <ShareButton
+                targetRef={shareRef}
+                title={`My Crisis Cost Impact - ${country.name}`}
+                description={`During ${crisis.name}, I could pay +${formatAmount(Math.round(walletImpact.yearlyIncrease))} extra per year!`}
+              />
             </div>
             
-            {/* Total impact */}
-            <div className="stat-card bg-destructive/5 border-destructive/20">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 rounded-xl bg-destructive/10">
-                  <TrendingUp className="w-6 h-6 text-destructive" />
+            {/* Shareable content */}
+            <ShareableCard
+              ref={shareRef}
+              title="My Wallet Impact"
+              subtitle={`${country.name} • ${crisis.name}`}
+            >
+              {/* Breakdown cards */}
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="stat-card text-center">
+                  <Fuel className="w-5 h-5 mx-auto mb-2 text-chart-fuel" />
+                  <div className="text-base font-bold text-chart-fuel">
+                    +{formatAmount(Math.round(walletImpact.monthlyFuelIncrease))}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Fuel/mo</div>
                 </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Monthly Extra Cost</div>
-                  <div className="text-2xl font-bold text-destructive">
-                    +{formatAmount(Math.round(walletImpact.totalMonthlyIncrease))}
+                
+                <div className="stat-card text-center">
+                  <Apple className="w-5 h-5 mx-auto mb-2 text-chart-food" />
+                  <div className="text-base font-bold text-chart-food">
+                    +{formatAmount(Math.round(walletImpact.monthlyFoodIncrease))}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Food/mo</div>
+                </div>
+                
+                <div className="stat-card text-center">
+                  <Smartphone className="w-5 h-5 mx-auto mb-2 text-chart-electronics" />
+                  <div className="text-base font-bold text-chart-electronics">
+                    +{formatAmount(Math.round(walletImpact.monthlyElectronicsIncrease))}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Tech/mo</div>
+                </div>
+              </div>
+              
+              {/* Total impact */}
+              <div className="stat-card bg-destructive/5 border-destructive/20">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 rounded-xl bg-destructive/10">
+                    <TrendingUp className="w-6 h-6 text-destructive" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Monthly Extra Cost</div>
+                    <div className="text-2xl font-bold text-destructive">
+                      +{formatAmount(Math.round(walletImpact.totalMonthlyIncrease))}
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Yearly Impact</span>
+                
+                <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Yearly Impact</span>
+                  </div>
+                  <span className="text-lg font-bold text-destructive">
+                    +{formatAmount(Math.round(walletImpact.yearlyIncrease))}
+                  </span>
                 </div>
-                <span className="text-lg font-bold text-destructive">
-                  +{formatAmount(Math.round(walletImpact.yearlyIncrease))}
-                </span>
               </div>
-            </div>
-            
-            {/* Disclaimer */}
-            <p className="text-xs text-muted-foreground text-center">
-              These are estimates based on historical crisis patterns. Actual impacts may vary.
-            </p>
+            </ShareableCard>
           </div>
         )}
       </div>

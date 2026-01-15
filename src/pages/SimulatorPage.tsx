@@ -3,15 +3,18 @@ import { CountrySelector } from '@/components/CountrySelector';
 import { CrisisSelector } from '@/components/CrisisSelector';
 import { ImpactCard } from '@/components/ImpactCard';
 import { ImpactMeter } from '@/components/ImpactMeter';
+import { ShareButton } from '@/components/ShareButton';
+import { ShareableCard } from '@/components/ShareableCard';
 import { useAppState } from '@/hooks/useAppState';
 import { getCountryByCode } from '@/data/countries';
 import { getCrisisById } from '@/data/crisisTypes';
 import { calculateImpact } from '@/lib/simulation';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 const SimulatorPage = () => {
   const { state, updateState } = useAppState();
+  const shareRef = useRef<HTMLDivElement>(null);
   
   const country = getCountryByCode(state.selectedCountry);
   const crisis = getCrisisById(state.selectedCrisis);
@@ -49,55 +52,71 @@ const SimulatorPage = () => {
         />
         
         {/* Results */}
-        {simulation && (
+        {simulation && country && crisis && (
           <div className="space-y-4 animate-slide-up">
-            {/* Overall severity */}
-            <div className="stat-card">
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-medium text-foreground">Overall Impact Severity</span>
-                <span className="text-2xl font-bold text-gradient">
-                  {Math.round(simulation.overallSeverity)}%
-                </span>
-              </div>
-              <ImpactMeter 
-                level={simulation.fuel.level} 
-                percentage={simulation.overallSeverity} 
-                showLabel={false}
-                size="lg"
+            {/* Share button */}
+            <div className="flex justify-end">
+              <ShareButton
+                targetRef={shareRef}
+                title={`${crisis.name} Impact on ${country.name}`}
+                description={`See how ${crisis.name} could affect costs in ${country.name}. Overall severity: ${Math.round(simulation.overallSeverity)}%`}
               />
             </div>
             
-            {/* Category cards */}
-            <div className="space-y-3">
-              <ImpactCard
-                category="fuel"
-                level={simulation.fuel.level}
-                minChange={simulation.fuel.minChange}
-                maxChange={simulation.fuel.maxChange}
-                explanation={simulation.fuel.explanation}
-              />
-              <ImpactCard
-                category="food"
-                level={simulation.food.level}
-                minChange={simulation.food.minChange}
-                maxChange={simulation.food.maxChange}
-                explanation={simulation.food.explanation}
-              />
-              <ImpactCard
-                category="currency"
-                level={simulation.currency.level}
-                minChange={simulation.currency.minChange}
-                maxChange={simulation.currency.maxChange}
-                explanation={simulation.currency.explanation}
-              />
-              <ImpactCard
-                category="electronics"
-                level={simulation.electronics.level}
-                minChange={simulation.electronics.minChange}
-                maxChange={simulation.electronics.maxChange}
-                explanation={simulation.electronics.explanation}
-              />
-            </div>
+            {/* Shareable content */}
+            <ShareableCard
+              ref={shareRef}
+              title={`${crisis.name} Impact`}
+              subtitle={`${country.name} • ${country.currency}`}
+            >
+              {/* Overall severity */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-medium text-foreground">Overall Impact Severity</span>
+                  <span className="text-2xl font-bold text-gradient">
+                    {Math.round(simulation.overallSeverity)}%
+                  </span>
+                </div>
+                <ImpactMeter 
+                  level={simulation.fuel.level} 
+                  percentage={simulation.overallSeverity} 
+                  showLabel={false}
+                  size="lg"
+                />
+              </div>
+              
+              {/* Category cards */}
+              <div className="space-y-3">
+                <ImpactCard
+                  category="fuel"
+                  level={simulation.fuel.level}
+                  minChange={simulation.fuel.minChange}
+                  maxChange={simulation.fuel.maxChange}
+                  explanation={simulation.fuel.explanation}
+                />
+                <ImpactCard
+                  category="food"
+                  level={simulation.food.level}
+                  minChange={simulation.food.minChange}
+                  maxChange={simulation.food.maxChange}
+                  explanation={simulation.food.explanation}
+                />
+                <ImpactCard
+                  category="currency"
+                  level={simulation.currency.level}
+                  minChange={simulation.currency.minChange}
+                  maxChange={simulation.currency.maxChange}
+                  explanation={simulation.currency.explanation}
+                />
+                <ImpactCard
+                  category="electronics"
+                  level={simulation.electronics.level}
+                  minChange={simulation.electronics.minChange}
+                  maxChange={simulation.electronics.maxChange}
+                  explanation={simulation.electronics.explanation}
+                />
+              </div>
+            </ShareableCard>
           </div>
         )}
       </div>
