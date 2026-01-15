@@ -4,10 +4,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
+import { InfoMenu } from "@/components/InfoMenu";
 import SimulatorPage from "./pages/SimulatorPage";
 import WalletPage from "./pages/WalletPage";
 import ComparePage from "./pages/ComparePage";
 import TimelinePage from "./pages/TimelinePage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
+import AboutPage from "./pages/AboutPage";
+import DisclaimerPage from "./pages/DisclaimerPage";
+import ContactPage from "./pages/ContactPage";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
 
@@ -21,11 +27,17 @@ const AppContent = () => {
 
   return (
     <>
+      <InfoMenu />
       <Routes>
         <Route path="/" element={<SimulatorPage />} />
         <Route path="/wallet" element={<WalletPage />} />
         <Route path="/compare" element={<ComparePage />} />
         <Route path="/timeline" element={<TimelinePage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsOfServicePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/disclaimer" element={<DisclaimerPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />
