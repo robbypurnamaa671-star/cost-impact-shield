@@ -1,7 +1,7 @@
 import { PageLayout } from '@/components/PageLayout';
 import { SpendSlider } from '@/components/SpendSlider';
 import { useAppState } from '@/hooks/useAppState';
-import { getCountryByCode } from '@/data/countries';
+import { getCountryByCode, formatCurrency, getSliderMax, getSliderStep } from '@/data/countries';
 import { getCrisisById } from '@/data/crisisTypes';
 import { calculateImpact, calculateWalletImpact } from '@/lib/simulation';
 import { useMemo } from 'react';
@@ -29,6 +29,13 @@ const WalletPage = () => {
   }, [simulation, state.monthlyFuelSpend, state.monthlyFoodSpend, state.monthlyElectronicsSpend]);
   
   const currencySymbol = country?.currencySymbol || '$';
+  const sliderStep = country ? getSliderStep(country) : 10;
+  
+  // Format amount based on country
+  const formatAmount = (amount: number) => {
+    if (!country) return `$${amount}`;
+    return formatCurrency(amount, country);
+  };
   
   return (
     <PageLayout 
@@ -43,14 +50,14 @@ const WalletPage = () => {
             <span className="font-medium text-foreground">{country?.name || 'Select country'}</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            Crisis: {crisis?.name || 'Select crisis type'}
+            Crisis: {crisis?.name || 'Select crisis type'} • Currency: {country?.currency}
           </p>
         </div>
         
         {/* Spending sliders */}
         <div className="space-y-3">
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-            Your Monthly Spending
+            Your Monthly Spending ({country?.currency})
           </h2>
           
           <SpendSlider
@@ -59,9 +66,10 @@ const WalletPage = () => {
             onChange={(v) => updateState({ monthlyFuelSpend: v })}
             currencySymbol={currencySymbol}
             min={0}
-            max={1000}
-            step={10}
+            max={country ? getSliderMax(country, 'fuel') : 1000}
+            step={sliderStep}
             icon={<Fuel className="w-5 h-5 text-chart-fuel" />}
+            formatValue={formatAmount}
           />
           
           <SpendSlider
@@ -70,9 +78,10 @@ const WalletPage = () => {
             onChange={(v) => updateState({ monthlyFoodSpend: v })}
             currencySymbol={currencySymbol}
             min={0}
-            max={2000}
-            step={20}
+            max={country ? getSliderMax(country, 'food') : 2000}
+            step={sliderStep}
             icon={<Apple className="w-5 h-5 text-chart-food" />}
+            formatValue={formatAmount}
           />
           
           <SpendSlider
@@ -81,14 +90,15 @@ const WalletPage = () => {
             onChange={(v) => updateState({ monthlyElectronicsSpend: v })}
             currencySymbol={currencySymbol}
             min={0}
-            max={500}
-            step={10}
+            max={country ? getSliderMax(country, 'electronics') : 500}
+            step={sliderStep}
             icon={<Smartphone className="w-5 h-5 text-chart-electronics" />}
+            formatValue={formatAmount}
           />
         </div>
         
         {/* Impact results */}
-        {walletImpact && (
+        {walletImpact && country && (
           <div className="space-y-4 animate-slide-up">
             <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
               Estimated Extra Costs
@@ -98,24 +108,24 @@ const WalletPage = () => {
             <div className="grid grid-cols-3 gap-2">
               <div className="stat-card text-center">
                 <Fuel className="w-5 h-5 mx-auto mb-2 text-chart-fuel" />
-                <div className="text-lg font-bold text-chart-fuel">
-                  +{currencySymbol}{Math.round(walletImpact.monthlyFuelIncrease)}
+                <div className="text-base font-bold text-chart-fuel">
+                  +{formatAmount(Math.round(walletImpact.monthlyFuelIncrease))}
                 </div>
                 <div className="text-xs text-muted-foreground">Fuel/mo</div>
               </div>
               
               <div className="stat-card text-center">
                 <Apple className="w-5 h-5 mx-auto mb-2 text-chart-food" />
-                <div className="text-lg font-bold text-chart-food">
-                  +{currencySymbol}{Math.round(walletImpact.monthlyFoodIncrease)}
+                <div className="text-base font-bold text-chart-food">
+                  +{formatAmount(Math.round(walletImpact.monthlyFoodIncrease))}
                 </div>
                 <div className="text-xs text-muted-foreground">Food/mo</div>
               </div>
               
               <div className="stat-card text-center">
                 <Smartphone className="w-5 h-5 mx-auto mb-2 text-chart-electronics" />
-                <div className="text-lg font-bold text-chart-electronics">
-                  +{currencySymbol}{Math.round(walletImpact.monthlyElectronicsIncrease)}
+                <div className="text-base font-bold text-chart-electronics">
+                  +{formatAmount(Math.round(walletImpact.monthlyElectronicsIncrease))}
                 </div>
                 <div className="text-xs text-muted-foreground">Tech/mo</div>
               </div>
@@ -129,8 +139,8 @@ const WalletPage = () => {
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Monthly Extra Cost</div>
-                  <div className="text-3xl font-bold text-destructive">
-                    +{currencySymbol}{Math.round(walletImpact.totalMonthlyIncrease).toLocaleString()}
+                  <div className="text-2xl font-bold text-destructive">
+                    +{formatAmount(Math.round(walletImpact.totalMonthlyIncrease))}
                   </div>
                 </div>
               </div>
@@ -141,7 +151,7 @@ const WalletPage = () => {
                   <span className="text-sm text-muted-foreground">Yearly Impact</span>
                 </div>
                 <span className="text-lg font-bold text-destructive">
-                  +{currencySymbol}{Math.round(walletImpact.yearlyIncrease).toLocaleString()}
+                  +{formatAmount(Math.round(walletImpact.yearlyIncrease))}
                 </span>
               </div>
             </div>

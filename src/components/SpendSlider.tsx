@@ -9,6 +9,7 @@ interface SpendSliderProps {
   step?: number;
   currencySymbol: string;
   icon: React.ReactNode;
+  formatValue?: (value: number) => string;
 }
 
 export const SpendSlider = ({ 
@@ -19,8 +20,13 @@ export const SpendSlider = ({
   max = 2000, 
   step = 10,
   currencySymbol,
-  icon 
+  icon,
+  formatValue 
 }: SpendSliderProps) => {
+  const displayValue = formatValue ? formatValue(value) : `${currencySymbol}${value.toLocaleString()}`;
+  const displayMin = formatValue ? formatValue(min) : `${currencySymbol}${min}`;
+  const displayMax = formatValue ? formatValue(max) : `${currencySymbol}${max}`;
+  
   return (
     <div className="stat-card">
       <div className="flex items-center justify-between mb-3">
@@ -29,7 +35,7 @@ export const SpendSlider = ({
           <span className="font-medium text-foreground">{label}</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-xl font-bold text-primary">{currencySymbol}{value.toLocaleString()}</span>
+          <span className="text-lg font-bold text-primary">{displayValue}</span>
           <span className="text-sm text-muted-foreground">/mo</span>
         </div>
       </div>
@@ -56,8 +62,8 @@ export const SpendSlider = ({
       />
       
       <div className="flex justify-between mt-1.5">
-        <span className="text-xs text-muted-foreground">{currencySymbol}{min}</span>
-        <span className="text-xs text-muted-foreground">{currencySymbol}{max}</span>
+        <span className="text-xs text-muted-foreground">{displayMin}</span>
+        <span className="text-xs text-muted-foreground">{displayMax}</span>
       </div>
     </div>
   );
