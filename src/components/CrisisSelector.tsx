@@ -1,6 +1,6 @@
 import { crisisTypes, CrisisType } from '@/data/crisisTypes';
 import { cn } from '@/lib/utils';
-import { Flame, Globe, Ban, Zap, Ship, LucideIcon } from 'lucide-react';
+import { Flame, Globe, Ban, Zap, Ship, Coins, TrendingUp, Landmark, Unplug, Pickaxe, LucideIcon } from 'lucide-react';
 
 interface CrisisSelectorProps {
   value: string;
@@ -14,6 +14,11 @@ const iconMap: Record<string, LucideIcon> = {
   Ban,
   Zap,
   Ship,
+  Coins,
+  TrendingUp,
+  Landmark,
+  Unplug,
+  Pickaxe,
 };
 
 export const CrisisSelector = ({ value, onChange, className }: CrisisSelectorProps) => {
